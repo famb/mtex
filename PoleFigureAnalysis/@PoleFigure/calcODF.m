@@ -48,6 +48,16 @@ vdisp('------ MTEX -- PDF to ODF inversion ------------------',varargin{:})
 
 % ------------------- get input--------------------------------------------
 
+% take the mean over duplicated pole figure values
+pf = unique(pf);
+
+CS = pf.CS;
+SS = pf.SS;
+if pf.r.antipodal
+  CS = CS.properGroup;
+  SS = SS.properGroup;
+end
+
 % generate discretization of orientation space
 if pf.allR{1}.isOption('resolution')
   res = pf.allR{1}.resolution;
@@ -55,7 +65,7 @@ else
   res = 5*degree;
 end
 res = get_option(varargin,'resolution',res);
-S3G = equispacedSO3Grid(pf.CS,pf.SS,'resolution',res);
+S3G = equispacedSO3Grid(CS,SS,'resolution',res);
 
 % zero range method
 if check_option(varargin,{'ZR','zero_range'}), S3G = zeroRange(pf,S3G,varargin{:});end
@@ -91,7 +101,7 @@ bw = min(get_option(varargin,'bandwidth',length(A)),length(A));
 A = A(1:bw);
 
 % detect superposed pole figures
-lh = int32(cellfun('length',pf.c)*length(pf.CS)*length(pf.SS));
+lh = int32(cellfun('length',pf.c)*length(CS)*length(SS));
 refl = cell2mat(pf.c);
 
 % arrange Pole figure data
@@ -147,7 +157,7 @@ for ip = 1:pf.numPF
 end
 
 if phon > 0.99
-  odf = uniformODF(pf.CS,pf.SS);
+  odf = uniformODF(CS,SS);
   return
 elseif phon > 0.1
   vdisp('ghost correction',varargin{:});
@@ -170,12 +180,7 @@ c0 = (1-phon)/length(S3G)*ones(length(S3G),1);
   'EXTERN',P,r,gh,A,c0,w,char(extract_option(varargin,'silent')));
 
 % return ODF
-odf = phon * uniformODF(pf.CS,pf.SS) + ... 
+odf = phon * uniformODF(CS,SS) + ... 
   (1-phon) * unimodalODF(S3G,psi,'weights',c./sum(c));
 
-end
-
-
-function vdisp(s,varargin)
-if ~check_option(varargin,'silent'), disp(s);end
 end

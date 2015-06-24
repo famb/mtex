@@ -203,6 +203,13 @@ ebsd = mtexdata_forsterite;
 region = [33 4.5 3 3]*10^3;
 ebsd = ebsd(ebsd.inpolygon(region));
 
+% --------------------------------------------------------------
+function ebsd = mtexdata_csl
+
+CS = crystalSymmetry('m-3m','mineral','iron');
+ebsd = loadEBSD_generic(fullfile(mtexDataPath,'EBSD','CSL.txt'),'CS',CS,...
+  'ColumnNames', { 'Phase' 'x' 'y' 'Euler 1' 'Euler 2' 'Euler 3' 'IQ' 'CI' 'Error'});
+
 
 % ----------------------------------------------------------------------
 function ebsd = mtexdata_3d
@@ -231,7 +238,13 @@ ebsd = loadEBSD([mtexDataPath '/EBSD/data.ctf'],'ignorePhase',[0 3 4],...
 % ----------------------------------------------------------------------
 function ebsd = mtexdata_forsterite
 
+plotx2east; plotzOutOfPlane
 ebsd = loadEBSD(fullfile(mtexDataPath,'EBSD','Forsterite.ctf'),'convertEuler2spatialReferenceFrame');
+
+function ebsd = mtexdata_twins
+
+plotx2east; plotzOutOfPlane
+ebsd = loadEBSD(fullfile(mtexDataPath,'EBSD','twins.ctf'),'convertEuler2spatialReferenceFrame');
 
 
 % -----------------------------------------------------------------------

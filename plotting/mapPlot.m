@@ -25,8 +25,7 @@ classdef mapPlot < handle
       end
       
       mP.ax = ax;
-      mP.parent = get(ax,'parent');
-      mP.micronBar = scaleBar(mP,get_option(varargin,'scanUnit','um'));
+      mP.parent = get(ax,'parent');      
       
       % general settings
       axis(ax,'equal','tight','on');
@@ -38,12 +37,12 @@ classdef mapPlot < handle
         'XTickLabel',{},...
         'yTickLabel',{},...
         'Layer','top',...
-        'box','on');
+        'box','on','FontSize',getMTEXpref('FontSize'));
       grid(ax,'off');
       xlabel(ax,'x','visible','off')
       ylabel(ax,'y','visible','off')
-            
-      setCamera(varargin{:});
+                  
+      setCamera(ax,'default',varargin{:});
       
       setappdata(ax,'mapPlot',mP);
       
@@ -57,17 +56,13 @@ classdef mapPlot < handle
       catch %#ok<CTCH>
       end
       
-    end
-    
-    function datacursormode
-      
-      % set data cursor
-      dcm_obj = datacursormode(gcf);
-      set(dcm_obj,'SnapToDataVertex','off')
-      set(dcm_obj,'UpdateFcn',{@tooltip,ebsd});
+      % add a micron bar
+      mP.micronBar = scaleBar(mP,get_option(varargin,'scanUnit','um'));
       
     end
+        
   end
+  
 end
 
 % function for zooming
@@ -146,6 +141,9 @@ end
 % restore units
 set(mP.parent,'units',old_fig_units);
 set(mP.ax,'units',old_ax_units);
+
+% update micronbar
+mP.micronBar.update;
 
 end
 

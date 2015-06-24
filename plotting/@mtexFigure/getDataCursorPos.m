@@ -8,7 +8,7 @@ dcm_obj = datacursormode(mtexFig.parent);
 try
   pos = dcm_obj.getCursorInfo.Position;
 catch
- pos = dcm_obj.CurrentDataCursor.getCursorInfo.Position;
+  pos = dcm_obj.CurrentDataCursor.getCursorInfo.Position;
 end
 
 % get graphical object
@@ -22,10 +22,7 @@ end
 ax = get(target,'Parent');
 
 % get value
-value = [];
 zd = get(target,'zdata');
-if isempty(zd), return; end
-  
 xd = get(target,'xdata');
 yd = get(target,'ydata');
 
@@ -36,7 +33,15 @@ end
 
 [~,value] = min((xd(:)-pos(1)).^2 + (yd(:)-pos(2)).^2);
 
-if numel(zd) == numel(xd), value = zd(value); end
+if numel(zd) == numel(xd)
+  value = zd(value); 
+else
+  try %#ok<TRYNC>
+    cd = get(target,'cdata');
+    assert(numel(cd) == numel(xd));
+    value = cd(value);
+  end
+end
  
 % for spherical plots convert to polar coordinates
 sP = getappdata(ax,'sphericalPlot');

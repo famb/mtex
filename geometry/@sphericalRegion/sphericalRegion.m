@@ -1,11 +1,11 @@
 classdef sphericalRegion
-  %sphericalRegion implements a region region on the sphere
-  %   The region is bounded by small circles given by there normal vectors
-  %   and the maximum inner product, i.e., all points v inside a region
-  %   satisfy the conditions dot(v, N) <= alpha
+  %sphericalRegion implements a region on the sphere
+  % The region is bounded by small circles given by there normal vectors
+  % and the maximum inner product, i.e., all points v inside a region
+  % satisfy the conditions dot(v, N) <= alpha
   
   properties
-    N = vector3d     % the nornal vectors of the bounding circles
+    N = vector3d     % the normal vectors of the bounding circles
     alpha = [] % the cosine of the bounding circle
     antipodal = false
   end
@@ -96,6 +96,9 @@ classdef sphericalRegion
     
     function [thetaMin, thetaMax] = thetaRange(sR,rho)
       
+      % antipodal should not increase spherical region
+      sR.antipodal = false;
+      
       if nargin == 2
         
         theta = linspace(0,pi,10000);
@@ -134,11 +137,8 @@ classdef sphericalRegion
           thetaMax = max(acos(sR.alpha) + angle(sR.N,zvector));
         else
           thetaMax = pi;
-        end
-        
-      end
-      
-      
+        end        
+      end            
     end
 
     

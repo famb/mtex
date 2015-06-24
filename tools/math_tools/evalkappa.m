@@ -1,12 +1,12 @@
 function kappa = evalkappa(lambda,varargin)
 % eigenvalues of orientation tensor to bingham distribution parameters
 %
-%% Options
+% Options
 %  approximated - approximated solution of kappas
 %  precision    - precision of solvus
 %  iteration    - number of newton interations
 %
-%% See also
+% See also
 % orientation/mean EBSD/mean BinghamODF
 
 if check_option(varargin,'approximated')
@@ -21,10 +21,9 @@ else
   end
   
   try
-    disp('Calling external programm')
     kappa = call_extern('evalmhyper','intern',d,iter,'EXTERN',lambda);
   catch
-    warning('only approximated solution of kappas')
+    %warning('only approximated solution of kappas')
     kappa = evalkappaapprox(lambda);
   end
 end

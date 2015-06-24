@@ -35,6 +35,16 @@ for i = 1:numel(sP)
   % check that there is something left to plot
   if all(isnan(x) | isnan(y)), continue; end
     
+  % add some nans if lines are plotted
+  if check_option(varargin,'edgecolor')
+    d = sqrt(diff(x).^2 + diff(y).^2);
+    ind = find(d > 2.5);
+    for k = 1:numel(ind)
+      x = [x(1:ind(k)+k-1);nan;x(ind(k)+k:end)];
+      y = [y(1:ind(k)+k-1);nan;y(ind(k)+k:end)];
+    end
+  end
+  
   % default arguments
   patchArgs = {'parent',sP(i).ax,...
     'vertices',[x(:) y(:)],...
@@ -45,9 +55,13 @@ for i = 1:numel(sP)
     };
 
   % markerSize
-  res = max(v.resolution,1*degree);
-  res = get_option(varargin,'scatter_resolution',res);
+  if ~check_option(varargin,{'scatter_resolution','MarkerSize'})
+    res = max(v.resolution,1*degree);
+  else
+    res = get_option(varargin,'scatter_resolution',1*degree);
+  end
   MarkerSize  = get_option(varargin,'MarkerSize',min(8,50*res));
+  
   patchArgs = [patchArgs,{'MarkerSize',MarkerSize}]; %#ok<AGROW>
 
   % dynamic markersize
@@ -63,6 +77,16 @@ for i = 1:numel(sP)
     cdata = varargin{1};
     if numel(cdata) == length(v)
       cdata = reshape(cdata,[],1);
+      
+      % scale the data
+      [cdata,~,minData,maxData] = scaleData(cdata,varargin{:});
+            
+      % add annotations for min and max
+      if check_option(varargin,'minmax')
+        set(sP(i).TL,'string',{'Max:',xnum2str(maxData)});
+        set(sP(i).BL,'string',{'Min:',xnum2str(minData)});
+      end
+      
     else
       cdata = reshape(cdata,[],3);
     end
@@ -73,12 +97,6 @@ for i = 1:numel(sP)
       'markerfacecolor','flat',...
       'markeredgecolor','flat'),varargin{2:end}); %#ok<AGROW>
     set(get(get(h(i),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-    
-    % add annotations for min and max
-    %if numel(cdata) == length(v)
-    %  set(sP(i).TL,'string',{'Max:',xnum2str(max(cdata(:)))});
-    %  set(sP(i).BL,'string',{'Min:',xnum2str(min(cdata(:)))});
-    %end
       
   else % --------- colorcoding according to nextStyle -----------------
       
@@ -95,18 +113,18 @@ for i = 1:numel(sP)
     h(i) = optiondraw(patch(patchArgs{:},...
       'MarkerFaceColor',mfc,...
       'MarkerEdgeColor',mec),varargin{:}); %#ok<AGROW>
-    
-    % this is for legend only
+    % remove from legend
     set(get(get(h(i),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-    %h(i) = optiondraw(scatter(x,y,...
-    %  'MarkerFaceColor',mfc,...
-    %  'MarkerEdgeColor',mec),varargin{:}); %#ok<AGROW>
-    holdState = get(sP(i).ax,'nextPlot');
-    set(sP(i).ax,'nextPlot','add');
-    optiondraw(scatter(0,0,'parent',sP(i).ax,'MarkerFaceColor',mfc,...
-      'MarkerEdgeColor',mec,'visible','off'),varargin{:});
-    set(sP(i).ax,'nextPlot',holdState);
     
+    % since the legend entry for patch object is not nice we draw an
+    % invisible scatter dot just for legend
+    if check_option(varargin,'DisplayName')      
+      holdState = get(sP(i).ax,'nextPlot');
+      set(sP(i).ax,'nextPlot','add');
+      optiondraw(scatter(0,0,'parent',sP(i).ax,'MarkerFaceColor',mfc,...
+        'MarkerEdgeColor',mec,'visible','off'),varargin{:});
+      set(sP(i).ax,'nextPlot',holdState);
+    end
   end
 
   % set resize function for dynamic marker sizes

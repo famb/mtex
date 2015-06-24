@@ -51,11 +51,12 @@ uimenu(m,'label','Set Outer Margin','callback',{@setMargin,'outer'});
 
 % annotations
 
-an = uimenu(m,'label','Anotations');
-uimenu(an,'label','Show min/max','checked','off','callback',{@setVisible,'minmax'});
-uimenu(an,'label','Show labels','checked','off','callback',{@setVisible,'labels'});
-uimenu(an,'label','Show coordinates','checked','off','callback',{@setVisible,'ticks'});
-uimenu(an,'label','Show grid','checked','off','callback',{@setVisible,'grid'});
+an = uimenu(m,'label','Annotations');
+uimenu(an,'label','Min/Max','checked',isVisible('minmax'),'callback',{@setVisible,'TL','BL'});
+uimenu(an,'label','Axes Labels','checked',isVisible('labels'),'callback',{@setVisible,'labels'});
+uimenu(an,'label','Coordinates','checked',isVisible('ticks'),'callback',{@setVisible,'ticks'});
+uimenu(an,'label','Grid','checked','off','callback',{@setVisible,'grid'});
+uimenu(an,'label','Micronbar','checked','on','callback',{@setVisible,'micronBar'});
 
 
 
@@ -114,7 +115,7 @@ end
 
 
 % Grid Visibility
-function setVisible(obj,event,element)
+function setVisible(obj,event,varargin)
 
 if strcmp(get(obj,'checked'),'on')
   onoff = 'off';
@@ -128,38 +129,41 @@ set(obj,'checked',onoff);
 ax = findobj(gcf,'type','axes');
 for a = 1:numel(ax)
 
-  switch element
-    case 'minmax'
-      if ~isappdata(ax(a),'annotation'), continue;end
-      an = getappdata(ax(a),'annotation');
-      set(an.h([1,3]),'visible',onoff);
-  
-    case 'labels'
-      la = [get(ax(a),'xlabel'),get(ax(a),'ylabel')];
-      set(la,'visible',onoff);
+  for element = cellstr(varargin)
+    switch char(element)
 
-    case 'ticks'
-      
-      if strcmp(onoff,'on')
-        set(ax(a),'xtickLabelMode','auto','ytickLabelMode','auto');
-        set(ax(a),'tickLength',[0.01,0.01]);
-      else
-        set(ax(a),'xtickLabel',{},'ytickLabel',{});
-        set(ax(a),'tickLength',[0,0]);
-      end
-      
-    otherwise
-    
-      if isappdata(ax(a),'sphericalPlot')
-        sP = getappdata(ax(a),'sphericalPlot');
-        if isempty(sP.grid)
-          set(ax(a),'XGrid',onoff,'YGrid',onoff);
-        else
-          set(sP.(element),'visible',onoff);
-        end
-      else
+      case 'micronBar'
         
-      end
+        mP  = getappdata(ax(a),'mapPlot');
+        if ~isempty(mP), mP.micronBar.visible = onoff;end
+      
+      case 'labels'
+        la = [get(ax(a),'xlabel'),get(ax(a),'ylabel')];
+        set(la,'visible',onoff);
+
+      case 'ticks'
+      
+        if strcmp(onoff,'on')
+          set(ax(a),'xtickLabelMode','auto','ytickLabelMode','auto');
+          set(ax(a),'tickLength',[0.01,0.01]);
+        else
+          set(ax(a),'xtickLabel',{},'ytickLabel',{});
+          set(ax(a),'tickLength',[0,0]);
+        end
+      
+      otherwise
+    
+        if isappdata(ax(a),'sphericalPlot')
+          sP = getappdata(ax(a),'sphericalPlot');
+          if isempty(sP.grid)
+            set(ax(a),'XGrid',onoff,'YGrid',onoff);
+          else
+            set(sP.(char(element)),'visible',onoff);
+          end
+        else
+        end
+        
+    end
   end
 end
 
@@ -167,6 +171,48 @@ mtexFig.drawNow
 
 end
 
+% Grid Visibility
+function onOff = isVisible(element)
+
+  onOff = 'off';
+  if isempty(mtexFig.children), return; end
+  ax = mtexFig.children(1);
+
+switch element
+  case 'minmax'
+    if isappdata(ax(a),'annotation')
+      hh = getappdata(ax,'annotation');
+      hh = hh.h;
+      onOff = get(hh(1),'visible');
+    end
+  
+  case 'labels'
+    xl = get(gca,'xlabel');    
+    onOff = get(xl,'visible');
+    
+  case 'ticks'
+    
+    if isempty(get(ax,'xtickLabel'))
+      onOff = 'off';
+    else
+      onOff = 'on';
+    end
+      
+  otherwise
+    
+    if isappdata(ax(a),'sphericalPlot')
+      sP = getappdata(ax(a),'sphericalPlot');
+      if isempty(sP.grid)
+        set(ax(a),'XGrid',onoff,'YGrid',onoff);
+      else
+        set(sP.(element),'visible',onoff);
+      end
+    else
+        
+    end
+
+end
+end
 
 
 % X Axis Direction

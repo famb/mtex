@@ -1,11 +1,17 @@
 function ind = subsind(gB,subs)
 
-% first select for minerals
+% select by isIndexed
+if check_option(subs,'indexed')
+  ind = gB.isIndexed;
+  subs = delete_option(subs,'indexed');
+else
+  ind = true(length(gB),1);
+end
+
+% select for minerals
 isMineralName = cellfun(@ischar,subs);
 if any(isMineralName)
   ind = gB.hasPhase(subs{isMineralName});
-else
-  ind = true(length(gB),1);
 end
 subs = subs(~isMineralName);
 
@@ -18,7 +24,7 @@ subs = subs(~isGrain);
 
 % other indexing
 for i = 1:length(subs)
-  
+         
   if isa(subs{i},'logical')
     
     sub = any(subs{i}, find(size(subs{i}')==max(size(ind)),1));
@@ -31,9 +37,8 @@ for i = 1:length(subs)
       error('Out of range; index must be a positive integer or logical.')
     end
     
-    iind = false(size(ind));
-    iind(subs{i}) = true;
-    ind = ind & iind;
+    ind = subs{i};
+    return
     
   elseif isa(subs{i},'polygon')
     

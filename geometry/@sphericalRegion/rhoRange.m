@@ -1,6 +1,9 @@
 function [rhoMin,rhoMax] = rhoRange(sR)
 % compute range of the polar angle of a spherical region
 
+% antipodal should not increase spherical region
+sR.antipodal = false;
+
 % discretisation
 omega = linspace(0,2*pi,361);
 
@@ -27,7 +30,7 @@ end
 
 rho = sort(mod(rho,2*pi));
 
-ind = find(abs(diff(rho))>3*degree);
+ind = find(abs(diff(rho))>20*degree);
 
 if isempty(ind)
   
@@ -36,7 +39,7 @@ if isempty(ind)
     rhoMax = 2*pi;
   else    
     rhoMin = min(rho);
-    rhoMax = max(rho);    
+    rhoMax = max(rho);
   end
   
 else

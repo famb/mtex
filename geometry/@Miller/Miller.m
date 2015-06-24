@@ -59,7 +59,8 @@ methods
       
       % check for symmetry
       m.CSprivate = getClass(varargin,'crystalSymmetry',[]);
-      assert(~isempty(m.CSprivate),['Starting with MTEX 4.0 Miller ' ...
+      assert(isa(varargin{1},'Miller') || ~isempty(m.CSprivate),...
+        ['Starting with MTEX 4.0 Miller ' ...
         'indices always require to specify a crystal symmetry!']);
 
       if nargin == 0 %empty constructor
@@ -68,7 +69,11 @@ methods
   
       elseif isa(varargin{1},'Miller') % copy constructor
   
+        if ~isempty(m.CSprivate), varargin{1}.CSprivate = m.CSprivate;end
         m = varargin{1};
+        dispStyle = extract_option(varargin,{'uvw','UVTW','hkl','hkil','xyz'}); %#ok<*PROP>
+        if ~isempty(dispStyle), m.dispStyle = dispStyle{1}; end
+        
         return;
   
       elseif ischar(varargin{1})
@@ -84,6 +89,15 @@ methods
         [m.x,m.y,m.z] = double(varargin{1});
         m.opt = varargin{1}.opt;
         m.antipodal = varargin{1}.antipodal;
+        
+      elseif iscell(varargin{1}) % list of Miller indices
+        
+        ind = find(cellfun(@iscell,varargin));
+        m = Miller(varargin{ind(1)}{:},varargin{:});
+        for i = 2:numel(ind)
+          mm = Miller(varargin{ind(i)}{:},varargin{:});
+          m =  [m,mm];
+        end
         
         % hkl and uvw
       elseif isa(varargin{1},'double')
@@ -160,7 +174,9 @@ methods
       
           otherwise        
             m.CSprivate = cs;
-        end  
+        end        
+      else
+        m.CSprivate = cs;
       end      
     end
     

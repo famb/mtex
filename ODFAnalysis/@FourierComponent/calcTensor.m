@@ -24,7 +24,7 @@ for l = 0:T.rank
     T_hat = Fourier(T,'order',l);
   
     % mean Tensor is the product of both
-    TVoigt = EinsteinSum(T_hat,[1:T.rank -1 -2],odf_hat,[-1 -2]) + TVoigt;
+    TVoigt = TVoigt + EinsteinSum(T_hat,[1:T.rank -1 -2],odf_hat,[-1 -2]);
         
   end
   
@@ -35,7 +35,7 @@ for l = 0:T.rank
     T_hat = Fourier(Tinv,'order',l);
     
     % mean Tensor is the product of both
-    TReuss = EinsteinSum(T_hat,[1:T.rank -1 -2],odf_hat,[-1 -2]) + TReuss;
+    TReuss = TReuss + EinsteinSum(T_hat,[1:T.rank -1 -2],odf_hat,[-1 -2]);
         
   end
 end
@@ -47,4 +47,4 @@ if isreal(double(T)),
 end
 
 % invert Reuss back
-TReuss = inv(TReuss);
+if check_option(varargin,{'Reuss','Hill'}), TReuss = inv(TReuss); end

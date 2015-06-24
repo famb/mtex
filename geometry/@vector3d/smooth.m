@@ -92,8 +92,9 @@ for j = 1:numel(sP)
   colormap(sP(j).ax,getMTEXpref('defaultColorMap'));
 
   % add annotations
-  if strcmpi(get_option(varargin,'minmax'),'on')
-    varargin = [{'BL',{'Min:',xnum2str(minData,0.2)},'TL',{'Max:',xnum2str(maxData,0.2)}} varargin];
+  if check_option(varargin,'minmax')
+    varargin = [{'BL',{'Min:',xnum2str(minData,0.2)},...
+      'TL',{'Max:',xnum2str(maxData,0.2)}} varargin]; %#ok<AGROW>
   end
 
   % bring grid in front
@@ -104,8 +105,13 @@ for j = 1:numel(sP)
 end
 
 % set styles
+varargin = delete_option(varargin,'parent');
 optiondraw(h,'LineStyle','none','Fill','on',varargin{:});
 
+if isappdata(sP(1).parent,'mtexFig')
+  mtexFig = getappdata(sP(1).parent,'mtexFig');
+  mtexFig.drawNow('figSize',getMTEXpref('figSize'),varargin{:});
+end
 
 if nargout == 0, clear h; end
 
@@ -156,7 +162,8 @@ if numel(unique(data)) > 1
   end
 
 elseif ~check_option(varargin,'fill',[],'off')
-  h = fill(X,Y,data,'LineStyle','none','parent',ax);
+  % transpose here seems to be needed due to a MATLAB bug
+  h = fill(X.',Y.',data.','LineStyle','none','parent',ax);
 end
 
 end

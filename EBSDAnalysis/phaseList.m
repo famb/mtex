@@ -79,15 +79,15 @@ classdef phaseList
       % ensure that there is at least one notIndexed phase
       % by prepending it !! TODO
       % this probably requires to specify phaseMap as an option    
-      %if all(cellfun(@(x) isa(x,'symmetry'),pL.CSList))
-      %  pL.CSList = [{'not indexed'},pL.CSList(:)];
-      %  pL.phaseId = pL.phaseId + 1;
-      %  if  ismember(0,pL.phaseMap)
-      %    pL.phaseMap = [-1;pL.phaseMap];
-      %  else
-      %    pL.phaseMap = [0;pL.phaseMap];
-      %  end
-      %end
+      if all(cellfun(@(x) isa(x,'symmetry'),pL.CSList))
+        pL.CSList = [{'not indexed'};pL.CSList(:)];
+        pL.phaseId = pL.phaseId + 1;
+        if  ismember(0,pL.phaseMap)
+          pL.phaseMap = [-1;pL.phaseMap];
+        else
+          pL.phaseMap = [0;pL.phaseMap];
+        end
+      end
       
       % apply colors
       colorOrder = getMTEXpref('EBSDColorNames');
@@ -113,7 +113,7 @@ classdef phaseList
       
       if numel(phase) == 1
         phase = repmat(phase,size(pL.phaseId));
-      elseif numel(phase) == numel(pl.phaseId)
+      elseif numel(phase) == numel(pL.phaseId)
         phase = reshape(phase,size(pL.phaseId));
       else
         error('List of phases has wrong size.')
@@ -226,7 +226,7 @@ classdef phaseList
 
     function isInd = get.isIndexed(pL)
       notIndexedPhase = [0,find(cellfun('isclass',pL.CSList,'char'))];
-      isInd = ~all(ismember(pL.phaseId,notIndexedPhase),2);
+      isInd = ~any(ismember(pL.phaseId,notIndexedPhase),2);
     end
     
     function out = isempty(pL)

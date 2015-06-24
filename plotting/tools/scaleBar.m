@@ -52,6 +52,11 @@ properties (Access = private)
   ruler
 end
 
+
+properties (Dependent = true)
+  visible
+end
+
 properties (SetObservable)
   backgroundColor = 'k'    % background color (ColorSpec)
   backgroundAlpha = 0.6    % background transparency (scalar 0<=a<=1)
@@ -69,11 +74,38 @@ methods
     
     sB.scanUnit = scanUnit;
     sB.hgt = hgtransform('parent',mP.ax);
-    sB.txt = text('parent',sB.hgt,'string','1mm','position',[NaN,NaN],...
-      'FontSize',getMTEXpref('FontSize'));
     sB.shadow = patch('parent',sB.hgt,'Faces',1,'Vertices',[NaN NaN NaN]);
+    sB.txt = text('parent',sB.hgt,'string','1mm','position',[NaN,NaN],...
+      'Interpreter',getMTEXpref('textInterpreter'),'FontSize',getMTEXpref('FontSize'));    
     sB.ruler = patch('parent',sB.hgt,'Faces',1,'Vertices',[NaN NaN NaN]);
     
+    % set resize function
+    hax = handle(mP.ax);
+    try      
+      hListener(1) = handle.listener(hax, findprop(hax, 'Position'), ...
+        'PropertyPostSet',@(a,b) sB.update);
+      % save listener, otherwise  callback may die
+      setappdata(hax, 'updatePos', hListener);
+    catch
+      if ~isappdata(hax, 'updatePos')
+        hListener = addlistener(hax,'Position','PostSet',...
+          @(obj,events) sB.update);
+        setappdata(hax, 'updatePos', hListener);
+      end
+    end  
+  end
+
+  function setOnTop(sB)
+    uistack(sB.hgt,'top')
+  end
+  
+  
+  function set.visible(sB,value)
+    set(sB.hgt,'visible',value);
+  end
+  
+  function value = get.visible(sB)
+    value = get(sB.hgt,'visible');
   end
   
   function update(sB)
@@ -94,7 +126,7 @@ methods
     % We do this so that we never display 10000 nm and always something like
     % 10 microns. Also, the correct choice of units will avoid decimals.
     [sBLength, sBUnit, factor] = switchUnit(0.3*abs(diff(dx)), sB.scanUnit);   
-    if strcmpi(sBUnit,'um'), sBUnit = '\mum';end
+    if strcmpi(sBUnit,'um'), sBUnit = '$\mu$m';end
     
     % we would like to have SBlength beeing a nice number
     goodValues = [1 2 5 10 15 20 25 50 75 100 125 150 200 500 750]; % Possible values for scale bar length  
@@ -105,7 +137,7 @@ methods
     % A gap around the bar of 1% of bar length looks nice
     set(sB.txt,'position',[dx(1),dy(1)])
     textHeight = get(sB.txt, 'Extent');
-    textHeight = textHeight(4-mod(xDir,2)) * sign(diff(dy));
+    textHeight = min(textHeight(3:4)) * sign(diff(dy));
     gapY = textHeight/3;
     gapX = abs(gapY) * sign(diff(dx));
 
@@ -113,13 +145,13 @@ methods
     boxWidth = rulerLength + 2.0 * gapX;
     boxx = dx(1) + gapX;
     boxy = dy(1) + gapY;
-        
+    
     % Make bounding box. The z-coordinate is used to put the box under the
     % line.
-    verts = [boxx, boxy, 0.1;
-      boxx, boxy +  3*gapY + textHeight, 0.1;
-      boxx + boxWidth, boxy + 3*gapY + textHeight, 0.1;
-      boxx + boxWidth, boxy, 0.1];
+    verts = [boxx, boxy;
+      boxx, boxy +  3*gapY + textHeight;
+      boxx + boxWidth, boxy + 3*gapY + textHeight;
+      boxx + boxWidth, boxy];
     set(sB.shadow,'Vertices', cP(verts), ...
       'Faces', [1 2 3 4], ...
       'FaceColor', sB.backgroundColor , 'EdgeColor', 'none', ...
@@ -127,21 +159,22 @@ methods
     
     % update text
     set(sB.txt,'string',[num2str(sBLength) ' ' sBUnit],'HorizontalAlignment', 'Center',...
-      'VerticalAlignment', 'bottom','color','w',...
-      'Position', cP([boxx+boxWidth/2,boxy+2.5*gapY,0.2]));
+      'VerticalAlignment', 'baseline','color','w',...
+      'Position', cP([boxx+boxWidth/2,boxy+3*gapY]));
 
     % Create line as a patch. The z-coordinate is used to layer the patch over
     % top of the bounding box.
-    set(sB.ruler,'Vertices',cP([boxx+gapX, boxy+gapY, 0.2; ...
-      boxx + gapX, boxy+2*gapY, 0.2; ...
-      boxx + gapX + rulerLength, boxy + 2*gapY, 0.2; ...
-      boxx + gapX + rulerLength, boxy + gapY, 0.2]), ...
+    set(sB.ruler,'Vertices',cP([boxx+gapX, boxy+gapY; ...
+      boxx + gapX, boxy+2*gapY; ...
+      boxx + gapX + rulerLength, boxy + 2*gapY; ...
+      boxx + gapX + rulerLength, boxy + gapY]), ...
       'Faces',[1 2 3 4], 'FaceColor','w', 'FaceAlpha',1);
+        
+    sB.setOnTop;
     
     function pos = cP(pos)
       % interchange x and y if needed
-      if mod(xDir,2), pos(:,[1,2]) = pos(:,[2,1]); end
-      pos(:,3) = (-1)^(az<0) * pos(:,3);
+      if mod(xDir,2), pos(:,[1,2]) = pos(:,[2,1]); end      
     end
     
   end

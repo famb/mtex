@@ -29,7 +29,7 @@ setMTEXpref('FontSize',13);
 
 % default annotation style
 setMTEXpref('annotationStyle',...
-  {'marker','s','MarkerEdgeColor','w','MarkerFaceColor','k'});
+  {'marker','s','MarkerEdgeColor','w','MarkerFaceColor','k','hitTest','off'});
 
 %% Euler angle convention
 % default Euler angle convention
@@ -146,10 +146,10 @@ setMTEXpref('textInterpreter','LaTeX');
 setMTEXpref('ITER_MAX',11);
 
 %% available memory
-% change this value to specify the total amount of installed ram
-% on your system in kilobytes
+% change this value to specify the total amount of free ram
+% on your system in kilobytes. By default this is set to 500 MB.
 
-setMTEXpref('memory',getmem);
+setMTEXpref('memory',500*1024);
 
 %% FFT Accuracy
 % change this value to have more accurate but slower computation when

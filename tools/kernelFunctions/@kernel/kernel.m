@@ -11,7 +11,7 @@ classdef kernel
     function psi = kernel(A)
       if nargin > 0
         psi.A = A(:);
-        psi = cutA(psi);
+        %psi.A = cutA(psi);
       end
     end
   
@@ -130,7 +130,7 @@ classdef kernel
     end
     
     function hw = halfwidth(psi)
-      hw = fminbnd(@(omega) (psi.K(1)-2*psi.K(cos(omega/2))).^2,0,pi);
+      hw = fminbnd(@(omega) (psi.K(1)-2*psi.K(cos(omega/2))).^2,0,3*pi/4);
     end
 
   end

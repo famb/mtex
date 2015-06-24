@@ -1,19 +1,18 @@
 classdef crystalSymmetry < symmetry
 % constructor
 %
+% Syntax
+%   crystalSymmetry -
+%   crystalSymmetry('cubic') -
+%   crystalSymmetry('2/m',[8.6 13 7.2],[90 116, 90]*degree,'mineral','orthoclase') -
+%   crystalSymmetry('O') -
+%   crystalSymmetry('LaueId',9) -
+%   crystalSymmetry('SpaceId',153) -
 %
 % Input
 %  name  - Schoenflies or International notation of the Laue group
 %  axes  - [a,b,c] --> length of the crystallographic axes
 %  angle - [alpha,beta,gamma] --> angle between the axes
-%
-% Syntax
-% crystalSymmetry -
-% crystalSymmetry('cubic') -
-% crystalSymmetry('2/m',[8.6 13 7.2],[90 116, 90]*degree,'mineral','orthoclase') -
-% crystalSymmetry('O') -
-% crystalSymmetry('LaueId',9) -
-% crystalSymmetry('SpaceId',153) -
 %
 % Output
 %  s - @crystalSymmetry
@@ -67,8 +66,12 @@ classdef crystalSymmetry < symmetry
     alpha       % angle between b and c
     beta        % angle between c and a
     gamma       % angle between a and b
-    
-    
+    aAxis       % a-axis
+    bAxis       % b-axis
+    cAxis       % c-axis
+    aAxisRec    % a*-axis reciprocal coordinate system
+    bAxisRec    % b*-axis reciprocal coordinate system
+    cAxisRec    % c*-axis reciprocal coordinate system
   end
   
   methods
@@ -112,11 +115,39 @@ classdef crystalSymmetry < symmetry
       s.mineral = get_option(varargin,'mineral','');
       s.color = get_option(varargin,'color','');
       
+      if check_option(varargin,'density')
+        s.opt.density = get_option(varargin,'density','');
+      end
+      
       % compute symmetry operations
       s = calcQuat(s,s.axes);
             
     end
-    
+
+    function a = get.aAxis(cs)
+      a = Miller(1,0,0,cs,'uvw');
+    end
+
+    function b = get.bAxis(cs)
+      b = Miller(0,1,0,cs,'uvw');
+    end
+
+    function c = get.cAxis(cs)
+      c = Miller(0,0,1,cs,'uvw');
+    end
+
+    function a = get.aAxisRec(cs)
+      a = Miller(1,0,0,cs,'hkl');
+    end
+
+    function b = get.bAxisRec(cs)
+      b = Miller(0,1,0,cs,'hkl');
+    end
+
+    function c = get.cAxisRec(cs)
+      c = Miller(0,0,1,cs,'hkl');
+    end
+
     function alpha = get.alpha(cs)
       alpha = angle(cs.axes(2),cs.axes(3));
     end

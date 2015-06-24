@@ -34,14 +34,14 @@ elseif check_option(varargin,'figSize')
       fac = 1;
     case 'large'
       fac = 0.8;
-    case 'normal'
+    case {'normal','medium'}
       fac = 0.5;
     case 'small'
       fac = 0.35;
     case 'tiny'
       fac =  0.25;
     otherwise
-      fac = get_option(varargin,'figSize');
+      fac = get_option(varargin,'figSize',0.5,'double');
   end
   figSize = figSize .* fac;
   
@@ -78,7 +78,7 @@ end
 if exist('screenExtend','var')
   width = mtexFig.axesWidth;
   height = mtexFig.axesHeight;
-  position = [(screenExtend(3)-width)/2,(screenExtend(4)-height)/2,width,height];
+  position = [(screenExtend(1,3)-width)/2,(screenExtend(1,4)-height)/2,width,height];
 end
 
 % draw layout
@@ -89,7 +89,7 @@ set(mtexFig.parent,'ResizeFcn',@(src,evt) updateLayout(mtexFig));
 
 % update colorrange
 if check_option(varargin,'colorrange')
-  mtexFig.CLim(get_option(varargin,'colorrange'));
+  mtexFig.CLim(get_option(varargin,'colorrange'),varargin{:});
 end
 
 % update scale bars

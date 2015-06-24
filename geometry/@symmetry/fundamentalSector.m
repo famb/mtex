@@ -7,14 +7,20 @@ function  sR = fundamentalSector(cs,varargin)
 %   sector of rotational axes for a specific rotation angle omega
 %
 % Input
-%  cs - symmetry
+%  cs - @symmetry
 %
 % Ouput
-%  sR - spherical Region
+%  sR - @sphericalRegion
 %
 % Options
 %  antipodal - include [[AxialDirectional.html,antipodal symmetry]]
 %
+
+% maybe there is nothing to do
+if check_option(varargin,'complete')
+  sR = sphericalRegion(varargin{:});
+  return
+end
 
 % antipodal symmetry is nothing else then adding inversion to the symmetry
 % group

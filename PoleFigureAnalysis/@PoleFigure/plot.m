@@ -23,6 +23,7 @@ end
 
 for i = 1:length(pf.allH)
   
+  if isempty(pf.allI{i}), continue; end
   if i>1, mtexFig.nextAxis; end
   
   pf.allR{i}.plot(data{i},...
@@ -35,6 +36,10 @@ if isNew % finalize plot
   setappdata(gcf,'SS',pf.SS);
   setappdata(gcf,'CS',pf.CS);
   set(gcf,'Name',['Pole Figures of Specimen ',inputname(1)]);
-  set(gcf,'Tag','pdf');
+  set(gcf,'Tag','pdf');  
   mtexFig.drawNow('figSize',getMTEXpref('figSize'),varargin{:});
+  if check_option(varargin,'3d')
+    rotate3d(gcf);
+    linkprop(mtexFig.children, 'CameraPosition');
+  end
 end

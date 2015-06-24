@@ -124,8 +124,9 @@ classdef HSVOrientationMapping < orientationMapping
     
     function rgb = h2color(oM,h,varargin)
       
+      h.antipodal = false;
       h = h.project2FundamentalRegion(oM.CS1);
-      whiteCenter = oM.whiteCenter.project2FundamentalRegion(oM.CS1);
+      whiteCenter = oM.whiteCenter.project2FundamentalRegion(oM.CS1); %#ok<*PROP>
       switchWB = false;
       
       % copy to the reduced sector

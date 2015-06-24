@@ -1,4 +1,4 @@
-function h = plot(ebsd,varargin)
+function [h,mP] = plot(ebsd,varargin)
 % spatial EBSD plot
 %
 % Input
@@ -26,7 +26,7 @@ function h = plot(ebsd,varargin)
 % EBSD/plot
 
 % create a new plot
-[mtexFig,isNew] = newMtexFigure(varargin{:});
+[mtexFig,isNew] = newMtexFigure('datacursormode',{@tooltip,ebsd},varargin{:});
 mP = newMapPlot('scanUnit',ebsd.scanUnit,'parent',mtexFig.gca,varargin{:});
 
 % transform orientations to color
@@ -78,7 +78,8 @@ end
 % keep track of the extend of the graphics
 % this is needed for the zoom: TODO maybe this can be done better
 %if isNew, ; end % TODO set axis tight removes all the plot
-axis(mP.ax,'tight'); set(mP.ax,'zlim',[0,1]);
+try axis(mP.ax,'tight'); end
+set(mP.ax,'zlim',[0,1]);
 mP.extend(1) = min(mP.extend(1),min(ebsd.prop.x(:)));
 mP.extend(2) = max(mP.extend(2),max(ebsd.prop.x(:)));
 mP.extend(3) = min(mP.extend(3),min(ebsd.prop.y(:)));
@@ -86,14 +87,10 @@ mP.extend(4) = max(mP.extend(4),max(ebsd.prop.y(:)));
 
 if nargout==0, clear h; end
 
-% set data cursor
-dcm_obj = datacursormode(gcf);
-set(dcm_obj,'SnapToDataVertex','on')
-set(dcm_obj,'UpdateFcn',{@tooltip,ebsd});
+if isNew
+  mtexFig.drawNow('figSize',getMTEXpref('figSize'),varargin{:});
+end
 
-datacursormode on;
-
-if isNew, mtexFig.drawNow('figSize',getMTEXpref('figSize'),varargin{:}); end
 mtexFig.keepAspectRatio = false;
 
 end

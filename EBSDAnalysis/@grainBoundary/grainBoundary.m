@@ -32,6 +32,8 @@ classdef grainBoundary < phaseList & dynProp
     A_F            % adjecency matrix faces - faces
     segmentId      % connected component id
     segmentSize    % number of faces that form a segment
+    x              % x coordinates of the vertices of the grains
+    y              % y coordinates of the vertices of the grains
   end
   
   methods
@@ -79,6 +81,29 @@ classdef grainBoundary < phaseList & dynProp
         .* ebsd.rotations(gB.ebsdId(isNotBoundary,2));
     
     end
+
+    function gB = cat(dim,varargin)
+      
+      gB = cat@dynProp(dim,varargin{:});
+
+      for k = 2:numel(varargin)
+
+        ngB = varargin{k};
+        
+        gB.F = [gB.F;ngB.F];
+        gB.grainId = [gB.grainId; ngB.grainId];
+        gB.ebsdId = [gB.ebsdId; ngB.ebsdId];
+        gB.misrotation = [gB.misrotation;ngB.misrotation];
+        gB.phaseId = [gB.phaseId; ngB.phaseId];        
+  
+      end
+      
+      % remove duplicates
+      [~,ind] = unique(gB.F,'rows');      
+      gB = gB.subSet(ind);
+      
+    end
+    
     
     function mori = get.misorientation(gB)
             
@@ -90,6 +115,14 @@ classdef grainBoundary < phaseList & dynProp
       v1 = vector3d(gB.V(gB.F(:,1),1),gB.V(gB.F(:,1),2),zeros(length(gB),1),'antipodal');
       v2 = vector3d(gB.V(gB.F(:,2),1),gB.V(gB.F(:,2),2),zeros(length(gB),1));
       dir = normalize(v1-v2);
+    end
+    
+    function x = get.x(gB)
+      x = gB.V(unique(gB.F(:)),1);
+    end
+    
+    function y = get.y(gB)
+      y = gB.V(unique(gB.F(:)),2);
     end
     
     function I_VF = get.I_VF(gB)
@@ -131,7 +164,7 @@ classdef grainBoundary < phaseList & dynProp
         if ischar(ph)
           alt_mineral = cellfun(@num2str,num2cell(gB.phaseMap),'Uniformoutput',false);
           ph = ~cellfun('isempty',regexpi(gB.mineralList(:),['^' ph])) | ...
-            strcmpi(alt_mineral,ph);
+            strcmpi(alt_mineral(:),ph);
           phId = find(ph,1);        
         elseif isa(ph,'symmetry')
           phId = find(cellfun(@(cs) cs==ph,gB.CSList));
